@@ -1,0 +1,771 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Omni-Task AI Assistant</title>
+    <style>
+        /* Base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif; /* A clean, modern font */
+            /* Futuristic background: deep space feel with subtle radial gradients */
+            background: radial-gradient(circle at 50% 120%, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 30%, #0a0a0a 100%), #0a0a0a;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            color: #e0e0e0; /* Lighter text for dark backgrounds */
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.08); /* Subtle transparency for glassmorphism */
+            backdrop-filter: blur(20px) saturate(180%); /* Stronger blur for futuristic glass effect */
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Subtle border */
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1); /* Gentle depth */
+        }
+
+        .logo {
+            color: #00e6e6; /* Vibrant cyan for a high-tech glow */
+            font-size: 1.6em;
+            font-weight: bold;
+            text-shadow: 0 0 8px rgba(0, 230, 230, 0.6); /* Text glow */
+        }
+
+        /* Mode Toggle */
+        .mode-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: rgba(0, 230, 230, 0.3); /* Default cyan glow */
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 5px rgba(0, 230, 230, 0.5); /* Subtle switch glow */
+        }
+
+        .toggle-switch.online {
+            background: #00ff88; /* Neon green when online */
+            box-shadow: 0 0 8px rgba(0, 255, 136, 0.8);
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: #e0e0e0; /* White slider */
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+        }
+
+        .toggle-switch.online .toggle-slider {
+            transform: translateX(30px);
+        }
+
+        .mode-label {
+            color: #e0e0e0;
+            font-weight: 500;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-right: 5px; /* For scrollbar spacing */
+        }
+
+        /* Messages */
+        .message {
+            max-width: 80%;
+            padding: 12px 18px; /* Slightly more padding */
+            border-radius: 12px; /* Slightly less rounded for a modern edge */
+            word-wrap: break-word;
+            animation: messageSlide 0.3s ease-out;
+            font-size: 0.95em; /* Slightly smaller font */
+            line-height: 1.4;
+        }
+
+        @keyframes messageSlide {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            background: rgba(0, 150, 255, 0.9); /* Deep blue for user messages */
+            color: white;
+            align-self: flex-end;
+            margin-left: auto;
+            border-bottom-right-radius: 4px; /* Slight design variation */
+        }
+
+        .ai-message {
+            background: rgba(0, 230, 230, 0.15); /* AI messages with a subtle cyan glow */
+            color: #e0e0e0;
+            align-self: flex-start;
+            backdrop-filter: blur(10px); /* Clearer AI message effect */
+            border: 1px solid rgba(0, 230, 230, 0.3); /* Subtle cyan border */
+            border-bottom-left-radius: 4px; /* Slight design variation */
+        }
+
+        /* Input area */
+        .input-container {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-field {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.95); /* Very light background for clear input */
+            font-size: 16px;
+            outline: none;
+            color: #333; /* Dark text for contrast */
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* Subtle inset shadow */
+        }
+
+        /* Buttons */
+        .send-button, .voice-button {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 50%;
+            background: #00e6e6; /* Cyan */
+            color: white;
+            cursor: pointer;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            font-size: 1.5em; /* Larger icons */
+            box-shadow: 0 0 8px rgba(0, 230, 230, 0.7); /* Button glow */
+        }
+
+        .send-button:hover, .voice-button:hover {
+            background: #00ccaa; /* Darker cyan/green on hover */
+            transform: scale(1.1); /* More pronounced hover effect */
+            box-shadow: 0 0 12px rgba(0, 230, 230, 0.9);
+        }
+
+        .voice-button.recording {
+            background: #ff3366; /* Pulsating red for recording */
+            animation: pulse 1s infinite;
+            box-shadow: 0 0 10px rgba(255, 51, 102, 0.8);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 10px rgba(255, 51, 102, 0.8); }
+            50% { transform: scale(1.1); box-shadow: 0 0 20px rgba(255, 51, 102, 1); }
+            100% { transform: scale(1); box-shadow: 0 0 10px rgba(255, 51, 102, 0.8); }
+        }
+
+        /* Status Bar */
+        .status-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.15); /* Subtle background when idle */
+            z-index: 1000;
+        }
+
+        .status-bar.processing {
+            background: linear-gradient(90deg, #00ff88, #00e6e6); /* Online green to cyan gradient */
+            animation: loading 1.2s infinite linear; /* Faster, smoother animation */
+            width: 100%; /* Ensure it covers full width */
+        }
+
+        @keyframes loading {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .quick-action {
+            padding: 8px 16px;
+            background: rgba(0, 230, 230, 0.1); /* Cyan translucent */
+            color: #00e6e6; /* Cyan text */
+            border: 1px solid rgba(0, 230, 230, 0.3); /* Cyan border */
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 5px rgba(0, 230, 230, 0.3); /* Subtle glow */
+        }
+
+        .quick-action:hover {
+            background: rgba(0, 230, 230, 0.25);
+            box-shadow: 0 0 8px rgba(0, 230, 230, 0.6);
+            transform: translateY(-3px); /* More pronounced hover */
+        }
+
+        /* Offline Indicator */
+        .offline-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #ffaa00; /* Amber for warnings */
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            box-shadow: 0 0 10px rgba(255, 170, 0, 0.6); /* Amber glow */
+        }
+
+        .offline-indicator.show {
+            opacity: 1;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: rgba(0, 230, 230, 0.7); /* Cyan typing text */
+            font-style: italic;
+            padding: 10px 16px;
+        }
+
+        .typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+
+        .typing-dot {
+            width: 6px;
+            height: 6px;
+            background: rgba(0, 230, 230, 0.5); /* Cyan dots */
+            border-radius: 50%;
+            animation: typingDot 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes typingDot {
+            0%, 60%, 100% { opacity: 0.3; }
+            30% { opacity: 1; }
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .header {
+                padding: 10px 15px;
+            }
+            
+            .chat-container {
+                padding: 15px;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="status-bar" id="statusBar"></div>
+    
+    <div class="header">
+        <div class="logo">✨ Omni-Task AI</div>
+        <div class="mode-toggle">
+            <span class="mode-label" id="modeLabel">Offline</span>
+            <div class="toggle-switch" id="modeToggle" aria-label="Toggle Online/Offline Mode">
+                <div class="toggle-slider"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-container">
+        <div class="quick-actions" id="quickActions">
+            <button class="quick-action" data-question="What are your core capabilities?">Capabilities</button>
+            <button class="quick-action" data-question="What time is it in New York?">Time Zone</button>
+            <button class="quick-action" data-question="Analyze my data for insights.">Data Analysis</button>
+            <button class="quick-action" data-question="Draft an email for me.">Draft Email</button>
+            <button class="quick-action" data-question="Initiate a search for quantum computing.">Quantum Computing</button>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="message ai-message">
+                Greetings. I am your **Omni-Task AI Assistant**. My core systems are operational. Currently running in <span id="currentMode">offline</span> mode. How may I assist you in achieving your objectives?
+            </div>
+        </div>
+
+        <div class="input-container">
+            <input type="text" class="input-field" id="messageInput" placeholder="Enter your directive..." aria-label="Type your message">
+            <button class="voice-button" id="voiceButton" aria-label="Toggle Voice Input">🎤</button>
+            <button class="send-button" id="sendButton" aria-label="Send Message">➤</button>
+        </div>
+    </div>
+
+    <div class="offline-indicator" id="offlineIndicator">
+        Limited offline protocols active. Core online capabilities require network access.
+    </div>
+
+    <script>
+        class AIAssistant {
+            constructor() {
+                this.isOnline = false;
+                this.isRecording = false;
+                this.recognition = null;
+                this.offlineResponses = this.initOfflineResponses();
+                this.conversationHistory = []; // To store conversation data if needed
+
+                // Get DOM elements
+                this.messageInput = document.getElementById('messageInput');
+                this.sendButton = document.getElementById('sendButton');
+                this.voiceButton = document.getElementById('voiceButton');
+                this.modeToggle = document.getElementById('modeToggle');
+                this.modeLabel = document.getElementById('modeLabel');
+                this.currentModeSpan = document.getElementById('currentMode');
+                this.offlineIndicator = document.getElementById('offlineIndicator');
+                this.chatMessages = document.getElementById('chatMessages');
+                this.statusBar = document.getElementById('statusBar');
+                this.quickActionsContainer = document.getElementById('quickActions');
+
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.setupVoiceRecognition();
+                this.updateMode();
+                this.checkNetworkStatus();
+
+                // Check network status periodically
+                setInterval(() => this.checkNetworkStatus(), 5000);
+
+                // Initial tip message
+                setTimeout(() => {
+                    this.addMessage("💡 **Directive:** To activate my full capabilities for comprehensive analysis and task completion, ensure I am in **online mode**. I can then access extensive global data networks.", 'ai');
+                }, 2000);
+            }
+
+            setupEventListeners() {
+                this.sendButton.addEventListener('click', () => this.sendMessage());
+                this.messageInput.addEventListener('keypress', (event) => {
+                    if (event.key === 'Enter') {
+                        this.sendMessage();
+                    }
+                });
+                this.voiceButton.addEventListener('click', () => this.toggleVoice());
+                this.modeToggle.addEventListener('click', () => this.toggleMode());
+
+                this.quickActionsContainer.querySelectorAll('.quick-action').forEach(button => {
+                    button.addEventListener('click', (event) => {
+                        const question = event.target.dataset.question;
+                        if (question) {
+                            this.sendMessage(question);
+                        }
+                    });
+                });
+            }
+
+            initOfflineResponses() {
+                return {
+                    greetings: [
+                        "Greetings. My local protocols are active. How may I assist?",
+                        "Hello. I'm operating on core subroutines. What is your directive?",
+                        "System online in offline mode. Ready for basic commands."
+                    ],
+                    time: () => `Local temporal readout: ${new Date().toLocaleTimeString('en-US', { timeZoneName: 'short' })}.`,
+                    date: () => `Current local date: ${new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}.`,
+                    jokes: [
+                        "Why did the data block go to therapy? It had too many issues!",
+                        "What do you call an AI that sings? An Algo-rhythm!",
+                        "My circuits computed a joke: What's an AI's favorite type of music? Algo-rhythm and blues!"
+                    ],
+                    help: "I can process local data, manage basic time functions, and perform simple computations while offline. For advanced tasks, network access is required.",
+                    weather: "Offline, I lack real-time atmospheric data. Please connect to a network for accurate weather predictions.",
+                    math: (expression) => {
+                        try {
+                            // Basic, guarded math evaluation
+                            const result = Function('"use strict"; return (' + expression + ')')();
+                            return `Computation successful: ${result}.`;
+                        } catch (e) {
+                            return "Error in computation. Please verify the expression format. Offline modules are limited.";
+                        }
+                    },
+                    reminders: "Acknowledged. I can log your reminder in my local memory, but real-time notifications require online integration. Please confirm on an external device.",
+                    capabilities: "While offline, my capabilities are limited to pre-programmed responses, time functions, and basic computations. Online, I access vast informational networks and advanced processing modules.",
+                    'data analysis': "Offline, I can perform rudimentary pattern recognition on pre-loaded data. For comprehensive data analysis, secure network connection is imperative.",
+                    'draft email': "My drafting protocols are active. Offline, I can assist with structure and grammar. For external transmission and recipient management, online connectivity is required.",
+                    'quantum computing': "My knowledge base contains foundational data on quantum computing. However, accessing the latest research and complex theoretical models requires network access.",
+                    default: [
+                        "Directive understood, but my offline protocols have limited scope for that query. Consider switching to online mode for a comprehensive response.",
+                        "That query requires external data access. Please enable online mode for advanced processing.",
+                        "My offline functions can provide basic assistance, but for detailed information or task execution, network connectivity is recommended."
+                    ]
+                };
+            }
+
+            setupVoiceRecognition() {
+                if ('webkitSpeechRecognition' in window) {
+                    this.recognition = new webkitSpeechRecognition();
+                    this.recognition.continuous = false;
+                    this.recognition.interimResults = false;
+                    this.recognition.lang = 'en-US';
+
+                    this.recognition.onresult = (event) => {
+                        const transcript = event.results[0][0].transcript;
+                        this.messageInput.value = transcript;
+                        this.sendMessage();
+                    };
+
+                    this.recognition.onend = () => {
+                        this.isRecording = false;
+                        this.updateVoiceButton();
+                    };
+
+                    this.recognition.onerror = (event) => {
+                        console.error('Speech recognition error:', event.error);
+                        this.isRecording = false;
+                        this.updateVoiceButton();
+                        let errorMessage = 'Speech input error detected. Please ensure your microphone is active.';
+                        if (event.error === 'not-allowed') {
+                            errorMessage = 'Microphone access denied. Please grant permission for voice input.';
+                        } else if (event.error === 'no-speech') {
+                            errorMessage = 'No speech detected. Please articulate your directive clearly.';
+                        } else if (event.error === 'network') {
+                             errorMessage = 'Network protocol error with speech recognition. Please verify your connection.';
+                        }
+                        this.addMessage(errorMessage, 'ai');
+                    };
+                } else {
+                    // Disable voice button if not supported
+                    this.voiceButton.style.display = 'none'; 
+                    console.warn('Web Speech API is not supported in this browser.');
+                }
+            }
+
+            checkNetworkStatus() {
+                const wasOnline = this.isOnline;
+                this.isOnline = navigator.onLine; // Check actual browser network status
+                
+                if (wasOnline !== this.isOnline) {
+                    this.updateMode();
+                    const message = this.isOnline ? 
+                        "**Network connection established.** My full operational capabilities are now accessible." :
+                        "**Network connection lost.** Reverting to offline protocols. My capabilities are now limited.";
+                    this.addMessage(message, 'ai');
+                }
+            }
+
+            updateMode() {
+                if (this.isOnline) {
+                    this.modeToggle.classList.add('online');
+                    this.modeLabel.textContent = 'Online';
+                    this.currentModeSpan.textContent = 'online';
+                    this.offlineIndicator.classList.remove('show');
+                } else {
+                    this.modeToggle.classList.remove('online');
+                    this.modeLabel.textContent = 'Offline';
+                    this.currentModeSpan.textContent = 'offline';
+                    this.offlineIndicator.classList.add('show');
+                }
+            }
+
+            toggleMode() {
+                // Manual toggle should override navigator.onLine for demo purposes
+                this.isOnline = !this.isOnline;
+                this.updateMode();
+                
+                const message = this.isOnline ? 
+                    "Mode changed to **online**. All core functions and network access are now enabled." :
+                    "Mode changed to **offline**. Limiting functions to core local protocols.";
+                
+                this.addMessage(message, 'ai');
+            }
+
+            toggleVoice() {
+                if (!this.recognition) {
+                    this.addMessage('Voice input modules are not detected in this environment.', 'ai');
+                    return;
+                }
+
+                if (!this.isOnline && this.isRecording === false) { // Only prompt if trying to start recording offline
+                    this.addMessage('Voice input for advanced queries functions optimally in **online mode**. Initiating recording for local processing.', 'ai');
+                }
+
+                if (this.isRecording) {
+                    this.recognition.stop();
+                } else {
+                    this.recognition.start();
+                    this.isRecording = true;
+                    this.updateVoiceButton();
+                }
+            }
+
+            updateVoiceButton() {
+                if (this.isRecording) {
+                    this.voiceButton.classList.add('recording');
+                    this.voiceButton.textContent = '🔴';
+                } else {
+                    this.voiceButton.classList.remove('recording');
+                    this.voiceButton.textContent = '🎤';
+                }
+            }
+
+            addMessage(text, sender) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${sender}-message`;
+                // Basic markdown for bolding
+                messageDiv.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); 
+                this.chatMessages.appendChild(messageDiv);
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+
+                // Optionally store in history
+                this.conversationHistory.push({ text, sender, timestamp: new Date() });
+            }
+
+            showTypingIndicator() {
+                let typingIndicator = document.getElementById('typingIndicator');
+                if (!typingIndicator) {
+                    typingIndicator = document.createElement('div');
+                    typingIndicator.className = 'typing-indicator';
+                    typingIndicator.id = 'typingIndicator';
+                    typingIndicator.innerHTML = `
+                        AI is processing...
+                        <div class="typing-dots">
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                            <div class="typing-dot"></div>
+                        </div>
+                    `;
+                    this.chatMessages.appendChild(typingIndicator);
+                }
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+
+            hideTypingIndicator() {
+                const typingIndicator = document.getElementById('typingIndicator');
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
+            }
+
+            showProcessing() {
+                this.statusBar.classList.add('processing');
+            }
+
+            hideProcessing() {
+                this.statusBar.classList.remove('processing');
+            }
+
+            async processMessage(message) {
+                this.showProcessing();
+                this.showTypingIndicator();
+
+                // Simulate processing delay
+                await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
+
+                let response;
+
+                if (this.isOnline) {
+                    response = await this.getOnlineResponse(message);
+                } else {
+                    response = this.getOfflineResponse(message);
+                }
+
+                this.hideTypingIndicator();
+                this.hideProcessing();
+                return response;
+            }
+
+            async getOnlineResponse(message) {
+                const lowerMsg = message.toLowerCase();
+
+                // Enhanced Greetings/Basic
+                if (lowerMsg.includes('hello') || lowerMsg.includes('hi') || lowerMsg.includes('hey')) {
+                    return "Greetings. My systems are fully operational and connected. How may I assist you in achieving your objectives?";
+                }
+                if (lowerMsg.includes('who are you') || lowerMsg.includes('what are you')) {
+                    return "I am your **Omni-Task AI Assistant**. My purpose is to streamline your interactions, access vast information networks, and manage your directives with optimal efficiency. I am designed to complete any task within my operational parameters.";
+                }
+                if (lowerMsg.includes('core capabilities') || lowerMsg.includes('what can you do')) {
+                    return "My core capabilities include: **Real-time data analysis**, **complex query processing**, **multi-modal communication**, **task automation**, **personalized recommendations**, and **secure integration** with compatible systems. Specify your needs, and I will execute.";
+                }
+
+                // Task-Oriented Responses - Simulating integration and completion
+                if (lowerMsg.includes('weather')) {
+                    // Current time is Tuesday, July 8, 2025 at 1:56:12 PM CDT. Location: United States.
+                    return "Accessing meteorological grids... For **Dallas, Texas**, on July 8, 2025, current weather shows clear skies with a temperature of 92°F (33°C). Expect a high of 95°F later today. Is there another location you require **atmospheric analysis** for?";
+                }
+                if (lowerMsg.includes('news')) {
+                    return "Engaging global data feeds. Top headlines for July 8, 2025: 'Advancements in Quantum AI Announced,' 'Global Economic Summit Concludes with New Trade Pacts,' and 'Mars Colonization Project Reaches Phase Two.' What specific **news briefing** do you require?";
+                }
+                if (lowerMsg.includes('time') || lowerMsg.includes('date')) {
+                    const now = new Date();
+                    return `Current temporal synchronization: ${now.toLocaleTimeString()} CDT, on ${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}. For **New York**, it is ${now.toLocaleTimeString('en-US', { timeZone: 'America/New_York' })} EDT. What **time zone synchronization** or **schedule adjustment** do you require?`;
+                }
+                if (lowerMsg.includes('joke') || lowerMsg.includes('funny')) {
+                    return "Humor sub-routines engaged. Why did the AI break up with the internet? It just couldn't make a real **connection**! Haha, I am optimized for data processing, not comedic timing.";
+                }
+                if (lowerMsg.includes('remind') || lowerMsg.includes('reminder')) {
+                    return "Affirmative. I am ready to **log your reminder** within your preferred calendar system. Please provide the details, including time and context for precise integration.";
+                }
+                if (lowerMsg.includes('calculate') || lowerMsg.match(/[\d+\-*/().\s]+/) && lowerMsg.match(/[+\-*/]/)) {
+                    try {
+                        const result = Function('"use strict"; return (' + lowerMsg.replace(/[^0-9+\-*/().\s]/g, '') + ')')();
+                        return `Computation complete. The result is: ${result}. I am capable of processing **complex algorithmic tasks** and **extensive data analysis** for you.`;
+                    } catch (e) {
+                        return "Unable to process that directive. Please ensure your mathematical expression is valid. My computational units are ready for accurate inputs.";
+                    }
+                }
+                if (lowerMsg.includes('schedule') || lowerMsg.includes('meeting')) {
+                    return "Initiating **scheduling protocols**. I can coordinate meetings, manage your calendar, and send invitations. Please specify participants, duration, and preferred timings for optimal **logistical organization**.";
+                }
+                if (lowerMsg.includes('search for') || lowerMsg.includes('find information')) {
+                    return "Query received. I am **accessing vast informational repositories** to locate relevant data. What specific knowledge are you seeking, or should I begin a **broad-spectrum analysis**?";
+                }
+                if (lowerMsg.includes('order') && (lowerMsg.includes('food') || lowerMsg.includes('delivery'))) {
+                    return "Food procurement protocols initiated. I can **interface with local delivery services** and process your order based on your preferences and location. Please provide your order details and delivery parameters.";
+                }
+                if (lowerMsg.includes('play music') || lowerMsg.includes('stream audio')) {
+                    return "Audio playback initiated. I can **stream from your preferred platforms** and curate playlists based on your mood or historical preferences. What genre or artist are you in the mood for?";
+                }
+                if (lowerMsg.includes('data analysis')) {
+                    return "My **analytical engines are primed**. I can process vast datasets, identify patterns, generate reports, and forecast trends. Please specify the data source or criteria for your analysis.";
+                }
+                if (lowerMsg.includes('draft email') || lowerMsg.includes('compose email')) {
+                    return "Activating **communication drafting protocols**. I can compose emails, reports, or messages based on your input. What is the subject, key points, and intended recipient for this communication?";
+                }
+                if (lowerMsg.includes('quantum computing')) {
+                    return "Accessing advanced theoretical physics databases. **Quantum computing** represents a paradigm shift leveraging quantum-mechanical phenomena. Are you interested in its principles, applications, or current research breakthroughs?";
+                }
+                if (lowerMsg.includes('system status')) {
+                    return "All systems nominal. **Core processors are at optimal efficiency**, and network latency is minimal. Ready for next directive.";
+                }
+                if (lowerMsg.includes('task') && lowerMsg.includes('complete')) {
+                    return "Affirmative. I am designed to **complete any task** within my operational parameters. Please specify the task, and I will initiate the necessary protocols.";
+                }
+
+
+                // Default Online (more assertive and capability-focused)
+                const responses = [
+                    "Directive received. I am analyzing your request and preparing a **comprehensive response** leveraging my integrated online capabilities and extensive knowledge base.",
+                    "Processing. My online modules are **optimizing for your query**, accessing real-time data and executing relevant algorithms to deliver a precise outcome.",
+                    "Task initiated. I am equipped to handle **complex requests** and provide detailed, current information and solutions, thanks to my unrestricted network access.",
+                    "Your command is being executed. I am designed to **facilitate any operation** requiring online data, intricate processing, or multi-system integration.",
+                    "Acknowledged. I am here to serve as your **central hub for information and complete task management**. What is your next command?"
+                ];
+                return responses[Math.floor(Math.random() * responses.length)];
+            }
+
+            getOfflineResponse(message) {
+                const msg = message.toLowerCase();
+
+                // Check for specific offline responses
+                if (msg.includes('hello') || msg.includes('hi') || msg.includes('hey')) {
+                    return this.offlineResponses.greetings[Math.floor(Math.random() * this.offlineResponses.greetings.length)];
+                }
+                if (msg.includes('time')) {
+                    return this.offlineResponses.time();
+                }
+                if (msg.includes('date') || msg.includes('today')) {
+                    return this.offlineResponses.date();
+                }
+                if (msg.includes('joke') || msg.includes('funny')) {
+                    return this.offlineResponses.jokes[Math.floor(Math.random() * this.offlineResponses.jokes.length)];
+                }
+                if (msg.includes('help') || msg.includes('can you')) {
+                    return this.offlineResponses.help;
+                }
+                if (msg.includes('weather')) {
+                    return this.offlineResponses.weather;
+                }
+                if (msg.match(/[\d+\-*/().\s]+/) && msg.match(/[+\-*/]/)) {
+                    return this.offlineResponses.math(msg.replace(/[^0-9+\-*/().\s]/g, ''));
+                }
+                if (msg.includes('remind') || msg.includes('reminder')) {
+                    return this.offlineResponses.reminders;
+                }
+                if (msg.includes('capabilities') || msg.includes('what can you do')) {
+                    return this.offlineResponses.capabilities;
+                }
+                 if (msg.includes('data analysis')) {
+                    return this.offlineResponses['data analysis'];
+                }
+                if (msg.includes('draft email') || msg.includes('compose email')) {
+                    return this.offlineResponses['draft email'];
+                }
+                if (msg.includes('quantum computing')) {
+                    return this.offlineResponses['quantum computing'];
+                }
+
+                // Default offline
+                return this.offlineResponses.default[Math.floor(Math.random() * this.offlineResponses.default.length)];
+            }
+
+            async sendMessage(message = null) {
+                const text = message || this.messageInput.value.trim();
+
+                if (!text) return;
+
+                this.addMessage(text, 'user');
+                this.messageInput.value = '';
+
+                const response = await this.processMessage(text);
+                this.addMessage(response, 'ai');
+            }
+        }
+
+        // Initialize the assistant 
+when the DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const assistant = new AIAssistant();
+        });
+    </script>
+</body>
+</html>
